@@ -93,6 +93,7 @@ const PAGES = [
             "devdocs/eval.md",
             "devdocs/callconv.md",
             "devdocs/compiler.md",
+            "devdocs/docsystem.md",
             "devdocs/functions.md",
             "devdocs/cartesian.md",
             "devdocs/meta.md",
