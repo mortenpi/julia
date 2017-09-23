@@ -633,6 +633,27 @@ end
 # high-level, more convenient method lookup functions
 
 # type for reflecting and pretty-printing a subset of methods
+"""
+
+
+An instance if normally accessed by the [`methods`](@ref) function. It wraps around an
+instance of the built-in [`MethodsTable`](@ref) type.
+
+```jldoctest methodlist
+julia> ml = methods(methods); typeof(ml)
+Base.MethodList
+```
+
+```jldoctest methodlist
+julia> for m in ml println(m) end
+methods(f::Core.Builtin) in Base at reflection.jl:658
+methods(f) in Base at reflection.jl:670
+methods(f, t) in Base at reflection.jl:650
+
+julia> ml[1]
+methods(f::Core.Builtin) in Base at reflection.jl:658
+```
+"""
 mutable struct MethodList
     ms::Array{Method,1}
     mt::MethodTable
@@ -643,6 +664,8 @@ isempty(m::MethodList) = isempty(m.ms)
 start(m::MethodList) = start(m.ms)
 done(m::MethodList, s) = done(m.ms, s)
 next(m::MethodList, s) = next(m.ms, s)
+
+getindex(m::MethodList, i) = m.ms[i]
 
 function MethodList(mt::MethodTable)
     ms = Method[]
