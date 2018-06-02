@@ -738,16 +738,10 @@ function do_init!(ctx::Context, tokens::Vector{Token})
 end
 
 function do_generate!(ctx::Context, tokens::Vector{Token})
-    local pkg
-    while !isempty(tokens)
-        token = popfirst!(tokens)
-        if token isa String
-            pkg = token
-            break # TODO: error message?
-        else
-            cmderror("`generate` takes a name of the project to create")
-        end
-    end
+    isempty(tokens) && cmderror("`generate` requires a project name as an argument")
+    length(tokens) > 1 && cmderror("`generate` takes exactly one argument")
+    pkg = first(tokens)
+    pkg isa String || cmderror("`generate` takes a name of the project to create")
     API.generate(pkg)
 end
 
