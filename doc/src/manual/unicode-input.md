@@ -31,7 +31,9 @@ function tab_completions(symbols...)
 end
 
 function unicode_data()
-    file = normpath(Sys.BINDIR, "..", "..", "doc", "UnicodeData.txt")
+    # @__DIR__ will point to doc/_build/{html,pdf}/en/manual/
+    # This needs to be updated when the build keyword to makedocs() is changed.
+    file = normpath(@__DIR__, "..", "..", "..", "..", "UnicodeData.txt")
     names = Dict{UInt32, String}()
     open(file) do unidata
         for line in readlines(unidata)
