@@ -45,7 +45,7 @@ Standard library changes
   * `range` can accept the stop value as a positional argument, e.g. `range(1,10,step=2)` ([#28708]).
   * `edit` can now be called on a module to edit the file that defines it ([#29636]).
   * `diff` now supports arrays of arbitrary dimensionality and can operate over any dimension ([#29827]).
-  * `sprandn` now supports result types like `ComplexF64` or `Float32` ([#30083]).
+  * `sprandn` now supports specifying the output element type ([#30083]).
   * All compiler-reflection tools (i.e. the `code_` class of functions and macros) now print accurate
     line number and inlining information in a common style, and take an optional parameter (debuginfo=:default)
     to control the verbosity of the metadata shown ([#29893]).
