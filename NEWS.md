@@ -35,6 +35,7 @@ New library functions
   * `isnothing(::Any)` function, to check whether something is a `Nothing`, returns a `Bool` ([#29679]).
   * `getpid(::Process)` method ([#24064]).
   * `fieldtypes(T::Type)` which return the declared types of the field in type T ([#29600]).
+  * `uuid5` have been added to the `UUIDs` standard library ([#28761]).
 
 Standard library changes
 ------------------------
