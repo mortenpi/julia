@@ -69,6 +69,7 @@ Standard library changes
   * `Symmetric` and `Hermitian` matrices now preserve the wrapper when scaled with a number ([#29469]).
   * New `edit(m::Module)` method which opens the main source file for module `m` ([#29636]).
   * `Base.@kwdef` can now be used for parametric structs, and for structs with supertypes ([#29316]).
+  * `merge(::NamedTuple, ::NamedTuple...)` can now be used with more than 2 `NamedTuple`s ([#29259]).
 
 Compiler/Runtime improvements
 -----------------------------
