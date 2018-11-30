@@ -73,6 +73,7 @@ Standard library changes
   * `Future.copy!` has been moved to `Base` ([#29178]).
   * New `ncodeunits(c::Char)` method as a fast equivalent to `ncodeunits(string(c))` ([#29153]).
   * `mean` and `var` now handles the empty case ([#29033]).
+  * New `sort!(::AbstractArray; dims)` method that can sort the array along the `dims` dimension ([#28902]).
 
 Compiler/Runtime improvements
 -----------------------------
