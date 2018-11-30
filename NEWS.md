@@ -72,6 +72,7 @@ Standard library changes
   * `merge(::NamedTuple, ::NamedTuple...)` can now be used with more than 2 `NamedTuple`s ([#29259]).
   * `Future.copy!` has been moved to `Base` ([#29178]).
   * New `ncodeunits(c::Char)` method as a fast equivalent to `ncodeunits(string(c))` ([#29153]).
+  * `mean` and `var` now handles the empty case ([#29033]).
 
 Compiler/Runtime improvements
 -----------------------------
