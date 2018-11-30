@@ -88,7 +88,7 @@ External dependencies
   * OpenBLAS have been upgraded from 0.3.2 to 0.3.3 ([#29845]).
   * The source code for Pkg is no longer included in JuliaLang/julia. Pkg is instead
     downloaded during the build process ([#29615]).
-  * LLVM have been upgraded to 6.0.1 ([#28745]).
+  * LLVM have been upgraded to 6.0.1 and support for LLVM < 6.0 have been dropped ([#28745], [#28696]).
 
 Deprecated or removed
 ---------------------
