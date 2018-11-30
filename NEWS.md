@@ -68,6 +68,7 @@ Standard library changes
   * `mul!`, `rmul!` and `lmul!` methods for `UniformScaling` ([#29506]).
   * `Symmetric` and `Hermitian` matrices now preserve the wrapper when scaled with a number ([#29469]).
   * New `edit(m::Module)` method which opens the main source file for module `m` ([#29636]).
+  * `Base.@kwdef` can now be used for parametric structs, and for structs with supertypes ([#29316]).
 
 Compiler/Runtime improvements
 -----------------------------

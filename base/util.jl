@@ -651,6 +651,10 @@ Inner constructors can still be defined, but at least one should accept argument
 same form as the default inner constructor (i.e. one positional argument per field) in
 order to function correctly with the keyword outer constructor.
 
+!!! compat "Julia 1.1"
+    `Base.@kwdef` for parametric structs, and structs with supertypes
+    requires at least Julia 1.1.
+
 # Examples
 ```jldoctest
 julia> Base.@kwdef struct Foo
