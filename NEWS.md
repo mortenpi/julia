@@ -66,6 +66,7 @@ Standard library changes
   * New `DateTime(::Date, ::Time)` constructor ([#29754]).
   * `isdiag` and `isposdef` for `Diagonal` and `UniformScaling` ([#29638]).
   * `mul!`, `rmul!` and `lmul!` methods for `UniformScaling` ([#29506]).
+  * `Symmetric` and `Hermitian` matrices now preserve the wrapper when scaled with a number ([#29469]).
   * New `edit(m::Module)` method which opens the main source file for module `m` ([#29636]).
 
 Compiler/Runtime improvements
