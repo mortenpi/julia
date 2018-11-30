@@ -71,6 +71,7 @@ Standard library changes
   * `Base.@kwdef` can now be used for parametric structs, and for structs with supertypes ([#29316]).
   * `merge(::NamedTuple, ::NamedTuple...)` can now be used with more than 2 `NamedTuple`s ([#29259]).
   * `Future.copy!` has been moved to `Base` ([#29178]).
+  * New `ncodeunits(c::Char)` method as a fast equivalent to `ncodeunits(string(c))` ([#29153]).
 
 Compiler/Runtime improvements
 -----------------------------
