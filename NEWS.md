@@ -70,6 +70,7 @@ Standard library changes
   * New `edit(m::Module)` method which opens the main source file for module `m` ([#29636]).
   * `Base.@kwdef` can now be used for parametric structs, and for structs with supertypes ([#29316]).
   * `merge(::NamedTuple, ::NamedTuple...)` can now be used with more than 2 `NamedTuple`s ([#29259]).
+  * `Future.copy!` has been moved to `Base` ([#29178]).
 
 Compiler/Runtime improvements
 -----------------------------
