@@ -249,6 +249,26 @@ module IteratorsMD
 
     CartesianIndices(A::AbstractArray) = CartesianIndices(axes(A))
 
+    """
+        (:)(I::CartesianIndex, J::CartesianIndex)
+
+    Construct [`CartesianIndices`](@ref) from two `CartesianIndex`.
+
+    !!! compat "Julia 1.1"
+        This method requires at least Julia 1.1.
+
+    # Examples
+    ```jldoctest
+    julia> I = CartesianIndex(2,1);
+
+    julia> J = CartesianIndex(3,3);
+
+    julia> I:J
+    2×3 CartesianIndices{2,Tuple{UnitRange{Int64},UnitRange{Int64}}}:
+     CartesianIndex(2, 1)  CartesianIndex(2, 2)  CartesianIndex(2, 3)
+     CartesianIndex(3, 1)  CartesianIndex(3, 2)  CartesianIndex(3, 3)
+    ```
+    """
     (:)(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
         CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
 
