@@ -78,6 +78,7 @@ Standard library changes
   * `range` now accept `stop` as a positional argument ([#28708]).
   * `parse(Bool, str)` is now supported ([#29997]).
   * `copyto!(::AbstractMatrix, ::UniformScaling)` supports rectangular matrices now ([#28790]).
+  * In `put!(c::Channel{T}, v)`, `v` now gets converted to `T` as `put!` is being called ([#29092]).
 
 Compiler/Runtime improvements
 -----------------------------
