@@ -77,6 +77,7 @@ Standard library changes
   * New `sort!(::AbstractArray; dims)` method that can sort the array along the `dims` dimension ([#28902]).
   * `range` now accept `stop` as a positional argument ([#28708]).
   * `parse(Bool, str)` is now supported ([#29997]).
+  * `copyto!(::AbstractMatrix, ::UniformScaling)` supports rectangular matrices now ([#28790]).
 
 Compiler/Runtime improvements
 -----------------------------
