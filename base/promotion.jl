@@ -341,6 +341,9 @@ julia> A^3
  37   54
  81  118
 ```
+
+!!! compat "Julia 1.1"
+    Julia 1.1. added support for raising a number to a matrix power using `^`.
 """
 ^(x::Number, y::Number) = ^(promote(x,y)...)
 

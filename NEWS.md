@@ -80,6 +80,7 @@ Standard library changes
   * `copyto!(::AbstractMatrix, ::UniformScaling)` supports rectangular matrices now ([#28790]).
   * In `put!(c::Channel{T}, v)`, `v` now gets converted to `T` as `put!` is being called ([#29092]).
   * `current_project()` now also searched the parent directories of a Git repository for a `Project.toml` file. This also affects the behavior of the `--project` command line option when using the default `--project=@.` ([#29108]).
+  * Exponentiation operator `^` now supports raising a `Number` to an `AbstractMatrix` power ([#29782]).
 
 Compiler/Runtime improvements
 -----------------------------
