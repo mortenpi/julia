@@ -127,8 +127,8 @@ julia [switches] -- [programfile] [args...]
 
 !!! compat "Julia 1.1"
     In Julia 1.0, the default `--project=@.` option did not search up from the root
-    directory of a Git repository for the `Project.toml` file. Starting from Julia 1.1, it
-    searches all the way up to the the root of the filesystem.
+    directory of a Git repository for the `Project.toml` file. From Julia 1.1 forward, it
+    does.
 
 ## Resources
 
