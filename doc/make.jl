@@ -111,6 +111,15 @@ const PAGES = [
     "Standard Library" =>
         [stdlib.targetfile for stdlib in STDLIB_DOCS],
     "Developer Documentation" => [
+        "Building & Distributing" => [
+            "build/build.md",
+            "build/linux.md",
+            "build/macos.md",
+            "build/windows.md",
+            "build/freebsd.md",
+            "build/arm.md",
+            "build/distributing.md",
+        ],
         "devdocs/reflection.md",
         "Documentation of Julia's Internals" => [
             "devdocs/init.md",
