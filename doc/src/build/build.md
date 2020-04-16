@@ -1,18 +1,122 @@
-# Building Julia (Detailed)
+# Building Julia from source
 
-## Downloading the Julia source code
+This section contains various details related to building Julia.
+In addition to the general instructions on this page, there are additional pages
+containing notes for various OSes ([Linux](linux.md), [macOS](macos.md), [Windows](windows.md), [FreeBSD](freebsd.md)) and architectures ([ARM](arm.md)).
+There are also [pointers for people creating binary distributions of Julia on various platforms](distributing.md).
 
-If you are behind a firewall, you may need to use the `https` protocol instead of the `git` protocol:
+## [Required build tools](@id build-tools)
 
-```sh
-git config --global url."https://".insteadOf git://
+Building Julia requires that the following software be installed:
+
+- **[GNU make]**                — building dependencies.
+- **[gcc & g++][gcc]** (>= 4.7) or **[Clang][clang]** (>= 3.1, Xcode 4.3.3 on macOS) — compiling and linking C, C++.
+- **[libatomic][gcc]**          — provided by **[gcc]** and needed to support atomic operations.
+- **[python]** (>=2.7)          — needed to build LLVM.
+- **[gfortran]**                — compiling and linking Fortran libraries.
+- **[perl]**                    — preprocessing of header files of libraries.
+- **[wget]**, **[curl]**, or **[fetch]** (FreeBSD) — to automatically download external libraries.
+- **[m4]**                      — needed to build GMP.
+- **[awk]**                     — helper tool for Makefiles.
+- **[patch]**                   — for modifying source code.
+- **[cmake]** (>= 3.4.3)        — needed to build `libgit2`.
+- **[pkg-config]**              — needed to build `libgit2` correctly, especially for proxy support.
+
+[GNU make]:     https://www.gnu.org/software/make
+[patch]:        https://www.gnu.org/software/patch
+[wget]:         https://www.gnu.org/software/wget
+[m4]:           https://www.gnu.org/software/m4
+[awk]:          https://www.gnu.org/software/gawk
+[gcc]:          https://gcc.gnu.org
+[clang]:        https://clang.llvm.org
+[python]:       https://www.python.org/
+[gfortran]:     https://gcc.gnu.org/fortran/
+[curl]:         https://curl.haxx.se
+[fetch]:        https://www.freebsd.org/cgi/man.cgi?fetch(1)
+[perl]:         https://www.perl.org
+[cmake]:        https://www.cmake.org
+[OpenLibm]:     https://github.com/JuliaLang/openlibm
+[DSFMT]:        http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/#dSFMT
+[OpenBLAS]:     https://github.com/xianyi/OpenBLAS
+[LAPACK]:       https://www.netlib.org/lapack
+[MKL]:          https://software.intel.com/en-us/articles/intel-mkl
+[SuiteSparse]:  http://faculty.cse.tamu.edu/davis/suitesparse.html
+[PCRE]:         https://www.pcre.org
+[LLVM]:         https://www.llvm.org
+[FemtoLisp]:    https://github.com/JeffBezanson/femtolisp
+[GMP]:          https://gmplib.org
+[MPFR]:         https://www.mpfr.org
+[libuv]:        https://github.com/JuliaLang/libuv
+[libgit2]:      https://libgit2.org/
+[utf8proc]:     https://julialang.org/utf8proc/
+[libosxunwind]: https://github.com/JuliaLang/libosxunwind
+[libunwind]:    https://www.nongnu.org/libunwind
+[libssh2]:      https://www.libssh2.org
+[mbedtls]:      https://tls.mbed.org/
+[pkg-config]:   https://www.freedesktop.org/wiki/Software/pkg-config/
+
+On Debian-based distributions (e.g. Ubuntu), you can easily install them with `apt-get`:
+
+```
+sudo apt-get install build-essential libatomic1 python gfortran perl wget m4 cmake pkg-config
 ```
 
-Be sure to also configure your system to use the appropriate proxy
-settings, e.g. by setting the `https_proxy` and `http_proxy`
-variables.
+## Default build
 
-## Building Julia
+First, make sure you have all the [required dependencies](#builddeps) installed.
+Then, acquire the source code by cloning the git repository:
+
+```
+git clone git://github.com/JuliaLang/julia.git
+```
+
+!!! info "Firewalls and proxies"
+
+    If you are behind a firewall, you may need to use the `https` protocol instead of the `git` protocol:
+
+    ```sh
+    git config --global url."https://".insteadOf git://
+    ```
+
+    Be sure to also configure your system to use the appropriate proxy settings, e.g. by setting the `https_proxy` and `http_proxy` variables.
+
+By default you will be building the latest unstable version of
+Julia. However, most users should use the most recent stable version
+of Julia. You can get this version by changing to the Julia directory
+and running:
+
+```
+git checkout v1.4.0
+```
+
+Now run `make` to build the `julia` executable. Note that building Julia requires approximately 2GiB of disk space and 4GiB of virtual memory.
+
+!!! note
+
+    The build process will fail badly if any of the build directory's parent directories have spaces or other shell meta-characters such as `$` or `:` in their names (this is due to a limitation in GNU make).
+
+Once it is built, you can run the `julia` executable after you enter your julia directory and run
+
+```
+./julia
+```
+
+Your first test of Julia determines whether your build is working
+properly. From the UNIX/Windows command prompt inside the `julia`
+source directory, type `make testall`. You should see output that
+lists a series of running tests; if they complete without error, you
+should be in good shape [to start using Julia](@ref man-getting-started).
+In case this default build path did not work, see below for more detailed build
+instructions.
+
+### Uninstalling Julia
+
+Julia does not install anything outside the directory it was cloned
+into. Julia can be completely uninstalled by deleting this
+directory. Julia packages are installed in `~/.julia` by default, and
+can be uninstalled by deleting `~/.julia`.
+
+## Detailed build instructions
 
 When compiled the first time, the build will automatically download
 pre-built [external
@@ -130,36 +234,16 @@ latest version.
 
 Notes for various operating systems:
 
-* [Linux](https://github.com/JuliaLang/julia/blob/master/doc/build/linux.md)
-* [macOS](https://github.com/JuliaLang/julia/blob/master/doc/build/macos.md)
-* [Windows](https://github.com/JuliaLang/julia/blob/master/doc/build/windows.md)
-* [FreeBSD](https://github.com/JuliaLang/julia/blob/master/doc/build/freebsd.md)
+* [Linux](linux.md)
+* [macOS](macos.md)
+* [Windows](windows.md)
+* [FreeBSD](freebsd.md)
 
 Notes for various architectures:
 
-* [ARM](https://github.com/JuliaLang/julia/blob/master/doc/build/arm.md)
+* [ARM](arm.md)
 
-## Required Build Tools and External Libraries
-
-Building Julia requires that the following software be installed:
-
-- **[GNU make]**                — building dependencies.
-- **[gcc & g++][gcc]** (>= 4.7) or **[Clang][clang]** (>= 3.1, Xcode 4.3.3 on macOS) — compiling and linking C, C++.
-- **[libatomic][gcc]**          — provided by **[gcc]** and needed to support atomic operations.
-- **[python]** (>=2.7)          — needed to build LLVM.
-- **[gfortran]**                — compiling and linking Fortran libraries.
-- **[perl]**                    — preprocessing of header files of libraries.
-- **[wget]**, **[curl]**, or **[fetch]** (FreeBSD) — to automatically download external libraries.
-- **[m4]**                      — needed to build GMP.
-- **[awk]**                     — helper tool for Makefiles.
-- **[patch]**                   — for modifying source code.
-- **[cmake]** (>= 3.4.3)        — needed to build `libgit2`.
-- **[pkg-config]**              — needed to build `libgit2` correctly, especially for proxy support.
-
-On Debian-based distributions (e.g. Ubuntu), you can easily install them with `apt-get`:
-```
-sudo apt-get install build-essential libatomic1 python gfortran perl wget m4 cmake pkg-config
-```
+## [External Libraries](@id man-build-dependencies)
 
 Julia uses the following external libraries, which are automatically
 downloaded (or in a few cases, included in the Julia source
@@ -217,8 +301,6 @@ repository) and then compiled from source the first time you run
 [libssh2]:      https://www.libssh2.org
 [mbedtls]:      https://tls.mbed.org/
 [pkg-config]:   https://www.freedesktop.org/wiki/Software/pkg-config/
-
-## Build dependencies
 
 If you already have one or more of these packages installed on your system, you can prevent Julia from compiling duplicates of these libraries by passing `USE_SYSTEM_...=1` to `make` or adding the line to `Make.user`. The complete list of possible flags can be found in `Make.inc`.
 

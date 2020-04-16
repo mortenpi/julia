@@ -1,5 +1,4 @@
-Notes for building binary distributions
-=======================================
+# Binary distributions
 
 These notes are for those wishing to compile a binary distribution of Julia
 for distribution on various platforms.  We love users spreading Julia as
