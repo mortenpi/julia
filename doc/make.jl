@@ -238,7 +238,7 @@ function Documenter.deploy_folder(::BuildBotConfig; devurl, repo, branch, kwargs
             isempty(VERSION.prerelease) ? () : (VERSION.prerelease[1],))
         subfolder = "v$(ver)"
         return Documenter.DeployDecision(; all_ok=true, repo, branch, subfolder)
-    elseif Base.GIT_VERSION_INFO.branch == "master"
+    elseif Base.GIT_VERSION_INFO.branch == "master" || Base.GIT_VERSION_INFO.branch == "release-$(VERSION.major).$(VERSION.minor)"
         return Documenter.DeployDecision(; all_ok=true, repo, branch, subfolder=devurl)
     end
     return Documenter.DeployDecision(; all_ok=false)
