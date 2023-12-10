@@ -42,7 +42,26 @@ cd(joinpath(@__DIR__, "src")) do
         end
     end
 end
-
+# Standard libraries fall into two categories:
+#
+#  (1) Standard libraries that are hosted in a separate Git repo (e.g. SHA, Sockets).
+#  (2) Standard libraries that are part of the main Julia source code (e.g. LinearAlgebra, Test).
+#
+# The file paths in the docstring metadata for both will always point to the
+# `usr/share/julia/stdlib/vX.Y/STDLIB` directory. For case (1), we just set the root of the Git
+# remote to the...
+import Documenter.Remotes: Remotes, Remote, repourl, fileurl, issueurl
+struct VendoredStdlibRemote <: Remote
+    stdlib :: String
+end
+repourl(::VendoredStdlibRemote) = "https://github.com/JuliaLang/julia"
+function fileurl(remote::VendoredStdlibRemote, ref::AbstractString, filename::AbstractString, linerange)
+    url = "$(repourl(remote))/blob/$(ref)/stdlib/$(remote.stdlib)/$(filename)"
+    isnothing(linerange) && return url
+    lstart, lend = first(linerange), last(linerange)
+    return (lstart == lend) ? "$(url)#L$(lstart)" : "$(url)#L$(lstart)-L$(lend)"
+end
+issueurl(remote::VendoredStdlibRemote, issuenumber) = "$(repourl(remote))/issues/$issuenumber"
 # Because we have standard libraries that are hosted outside of the julia repo,
 # but their docs are included in the manual, we need to populate the remotes argument
 # of makedocs(), to make sure that Documenter knows how to resolve the directories
@@ -63,8 +82,47 @@ function parse_stdlib_version_file(path)
     end
     return values
 end
+const STDLIB_SRC_DIR = realpath(joinpath(@__DIR__, "..", "stdlib"))
+documenter_stdlib_remotes = Dict{String,Any}(
+    normpath(@__DIR__, "..") => (Remotes.GitHub("JuliaLang", "julia"), Base.GIT_VERSION_INFO.commit)
+)
+for stdlib in readdir(Sys.STDLIB)
+    # First, we'll ignore all JLLs -- we do not generate docs for them.
+    endswith(stdlib, "_jll") && continue
+    # Just as a sanity check, we ignore all files in the standard library directory
+    stdlib_source_root_path = joinpath(Sys.STDLIB, stdlib)
+    isdir(stdlib_source_root_path) || continue
+    #
+    # (1) It might be pulled in as a tarball (like SHA or Sockets)
+    # (2) It might be vendored in stdlib/ (like LinearAlgebra)
+    stdlib_version_file = joinpath(STDLIB_SRC_DIR, "$(stdlib).version")
+    stdlib_src_dir = joinpath(STDLIB_SRC_DIR, stdlib)
+    if isfile(stdlib_version_file)
+        versionfile = parse_stdlib_version_file(stdlib_version_file)
+        # From the (all uppercase) $(package)_GIT_URL and $(package)_SHA1 fields, we'll determine
+        # the necessary information. If this logic happens to fail for some reason for any of the
+        # standard libraries, we'll crash the documentation build, so that it could be fixed.
+        remote = let git_url_key = "$(uppercase(stdlib))_GIT_URL"
+            haskey(versionfile, git_url_key) || error("Missing $(git_url_key) in $version_fname")
+            m = match(LibGit2.GITHUB_REGEX, versionfile[git_url_key])
+            isnothing(m) && error("Unable to parse $(git_url_key)='$(versionfile[git_url_key])' in $version_fname")
+            Documenter.Remotes.GitHub(m[2], m[3])
+        end
+        stdlib_sha = let sha_key = "$(uppercase(stdlib))_SHA1"
+            haskey(versionfile, sha_key) || error("Missing $(sha_key) in $version_fname")
+            versionfile[sha_key]
+        end
+        documenter_stdlib_remotes[stdlib_source_root_path] = (remote, stdlib_sha)
+    elseif isdir(stdlib_src_dir)
+        documenter_stdlib_remotes[stdlib_source_root_path] = (VendoredStdlibRemote(stdlib), Base.GIT_VERSION_INFO.commit)
+    else
+        error("Standard library directory is problematic: $(Sys.STDLIB)/$(stdlib)")
+    end
+end
+for (k, v) in pairs(documenter_stdlib_remotes); @info "$k" v; end
 # This generates the value that will be passed to the `remotes` argument of makedocs(),
 # by looking through all *.version files in stdlib/.
+#=
 documenter_stdlib_remotes = let stdlib_dir = realpath(joinpath(@__DIR__, "..", "stdlib"))
     # Get a list of all *.version files in stdlib/..
     version_files = filter(readdir(stdlib_dir)) do fname
@@ -92,18 +150,48 @@ documenter_stdlib_remotes = let stdlib_dir = realpath(joinpath(@__DIR__, "..", "
             versionfile[sha_key]
         end
         # Construct the absolute (local) path to the stdlib package's root directory
+        #
+        # However, we need to support two cases here:
+        #
+        #  (1) We are just building the docs locally, with the full Julia build and source also available
+        #      to us. In that case, the standard library source files (and therefore the local paths recorded
+        #      if the docstring metadata) are pointing to the directories in stdlib/
+        #
+        #  (2) On CI, however, we do this thing where the documentation build runs in a different job. For that we
+        #      actually pull down the binary tarball, and just unpack it into `usr/`. In that situation, the
+        #      metadata file paths are actually the invalid /cache/... paths, but they get fixed by Base.fixup_stdlib_path.
+        #      But those paths point to usr/share/julia/stdlib, and not to stdlib/.
+        #
+        # We'll detect situations (2) by checking if the standard libraries that normally get unpacked into
+        # stdlib/ are present or not.
         package_root_dir = joinpath(stdlib_dir, "$(package)-$(package_sha)")
-        # Documenter needs package_root_dir to exist --- it's just a sanity check it does on the remotes= keyword.
-        # In normal (local) builds, this will be the case, since the Makefiles will have unpacked the standard
-        # libraries. However, on CI we do this thing where we actually build docs in a clean worktree, just
-        # unpacking the `usr/` directory from the main build, and the unpacked stdlibs will be missing, and this
-        # will cause Documenter to throw an error. However, we don't _actually_ need the source files of the standard
-        # libraries to be present, so we just generate empty root directories to satisfy the check in Documenter.
-        isdir(package_root_dir) || mkpath(package_root_dir)
+        if !isdir(package_root_dir)
+            # usr/share/julia/stdlib/v1.11/LinearAlgebra/src/diagonal.jl#L128-L132
+            package_root_dir = normpath(joinpath(
+                @__DIR__, "..",
+                "usr", "share", "julia", "stdlib",
+                "v$(Int(VERSION.major)).$(Int(VERSION.minor))",
+                package
+            ))
+            @warn "Override for $(package)" package_root_dir
+            if !isdir(package_root_dir)
+                error("""
+                Unable to determine the remote root for $package
+                Searched at: $(package_root_dir)""")
+            end
+        elseif !isfile(joinpath(package_root_dir, "src", "$(package).jl"))
+            # This should never happen, so we just run a sanity check here to make sure that the directories in
+            # stdlib/ are actually populated by the source files.
+            error("""
+            Unable to find standard library source files.
+            Missing src/$(package).jl in $(package_root_dir)""")
+        end
         package_root_dir => (remote, package_sha)
     end
     Dict(remotes_list)
 end
+for (k, v) in pairs(documenter_stdlib_remotes); @info "$k" v; end
+=#
 
 # Check if we are building a PDF
 const render_pdf = "pdf" in ARGS
